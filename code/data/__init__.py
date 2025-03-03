@@ -4,6 +4,11 @@ import os
 
 from data.plugins import Plugin
 
+
+# Backend option: Google Firestore
+firestore_project  = os.environ.get("FIRESTORE_GCLOUD_PROJECT", None)
+firestore_database = os.environ.get("FIRESTORE_DATABASE", None)
+
 # Backend option: LDAP
 DEFAULT_LDAP_BASENAME = "dc=example,dc=org"
 
@@ -95,6 +100,11 @@ elif scim_forward_url:
         scim_forward_url,
         scim_forward_key
     )
+elif firestore_project:
+    from data.plugins.firestore import FirestorePlugin
+
+    Users = FirestorePlugin(user_model, firestore_project, firestore_database)
+    Groups = FirestorePlugin(group_model, firestore_project, firestore_database)
 else:
     from data.plugins.file import FilePlugin
 
