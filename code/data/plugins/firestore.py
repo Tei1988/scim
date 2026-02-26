@@ -34,7 +34,10 @@ class FirestorePlugin(Plugin):
         logger.debug(f"[__getitem__]: {self.description}, id={id}")
 
         ref = self.collection.document(id)
-        return ref.get().to_dict()
+        doc = ref.get()
+        if doc.exists:
+            return doc.to_dict()
+        return None
 
     def __setitem__(self, id: str, details: Any) -> None:
         logger.debug(
@@ -42,4 +45,9 @@ class FirestorePlugin(Plugin):
         )
 
         ref = self.collection.document(id)
-        ref.set(json.loads(details))
+        data = json.loads(details)
+        
+        if self[id]:
+            ref.update(data)
+        else:
+            ref.set(data)
