@@ -2,9 +2,9 @@
 
 from datetime import datetime
 
-from typing import Union, List, Optional, Dict, Literal, Any
+from typing import Union, List, Optional, Dict, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 CORE_SCHEMA = "urn:ietf:params:scim:schemas:core:2.0"
 CORE_SCHEMA_USER = CORE_SCHEMA+":User"
@@ -24,14 +24,23 @@ class HealthCheck(BaseModel):
 
 
 class Operation(BaseModel):
-    op: Literal["add", "remove", "replace"]
+    model_config = {"populate_by_name": True}
+
+    op: str
     path: str
     value: Optional[Any] = None
 
+    @field_validator("op", mode="before")
+    @classmethod
+    def normalize_op(cls, v: str) -> str:
+        return v.lower()
+
 
 class Patch(BaseModel):
+    model_config = {"populate_by_name": True}
+
     schemas: List[str]
-    operations: List[Operation]
+    operations: List[Operation] = Field(alias="Operations", default=[])
 
 
 class Name(BaseModel):
